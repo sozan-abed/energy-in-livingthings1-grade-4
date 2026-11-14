@@ -1,0 +1,970 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4-Group Bridge Building: Living Things Need Energy</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Quicksand:wght@600;700;800&display=swap');
+        
+        body {
+            font-family: 'Quicksand', sans-serif;
+            background-color: #070d0d;
+            color: #f8fafc;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .font-game {
+            font-family: 'Fredoka One', cursive;
+        }
+
+        .oman-flag-strip {
+            background: linear-gradient(90deg, #d97706 0%, #dc2626 33.3%, #ffffff 33.3%, #ffffff 66.6%, #16a34a 66.6%, #16a34a 100%);
+        }
+
+        .option-btn {
+            transition: background-color 0.15s ease, border-color 0.15s ease, transform 0.1s ease;
+            overflow-wrap: break-word;
+            word-wrap: break-word;
+            white-space: normal;
+        }
+        .option-btn:hover {
+            background-color: #1e293b;
+            border-color: #fbbf24;
+        }
+        .option-btn:active {
+            background-color: #334155;
+            transform: scale(0.99);
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-8px); }
+            40%, 80% { transform: translateX(8px); }
+        }
+
+        .shake-element {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes floatStar {
+            0% { transform: translateY(8px) scale(0.8); opacity: 0; }
+            30% { opacity: 1; transform: translateY(0px) scale(1.05); }
+            80% { opacity: 1; transform: translateY(-4px) scale(1); }
+            100% { transform: translateY(-10px) scale(0.95); opacity: 0; }
+        }
+
+        .animate-star {
+            animation: floatStar 1.05s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .bridge-progress-bar {
+            transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        /* Custom sleek dropdown styling for teacher level selector */
+        select.level-select {
+            appearance: none;
+            background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fbbf24' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+            background-repeat: no-repeat;
+            background-position: right 0.4rem center;
+            background-size: 0.9em;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 h-screen w-screen text-slate-100 flex flex-col relative overflow-hidden">
+
+<div class="h-screen w-screen flex flex-col p-2.5 md:p-3 overflow-hidden relative z-10 bg-slate-950/60">
+    <!-- Top Header -->
+    <header class="flex justify-between items-center bg-slate-900/95 border-2 border-amber-400/70 rounded-2xl px-4 py-1.5 mb-2.5 shadow-[0_0_20px_rgba(251,191,36,0.25)] backdrop-blur-md shrink-0 h-16 relative overflow-hidden">
+        <div class="absolute top-0 left-0 right-0 h-1.5 oman-flag-strip"></div>
+        
+        <div class="flex items-center space-x-3">
+            <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-red-600 via-emerald-600 to-amber-400 flex items-center justify-center text-white shadow-lg text-xl border border-amber-300">
+                🌉
+            </div>
+            <div>
+                <h1 class="text-sm sm:text-lg md:text-2xl font-game text-transparent bg-clip-text bg-gradient-to-r from-red-400 via-amber-300 to-emerald-400 tracking-wide flex items-center gap-2">
+                    LIVING THINGS NEED ENERGY 🇴🇲
+                </h1>
+                <p class="text-xs sm:text-sm text-amber-300 font-extrabold">Choose Student Difficulty Level • Answer correctly to build your bridge!</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-2.5">
+            <!-- Global Level Set Buttons for Quick Classroom Switching -->
+            <div class="hidden xl:flex items-center bg-slate-950/90 border border-slate-700 rounded-xl p-1 gap-1 mr-1">
+                <span class="text-[11px] font-extrabold text-slate-400 px-2 uppercase">All Groups:</span>
+                <button onclick="setAllLevels('easy')" class="bg-emerald-600/30 hover:bg-emerald-600/60 text-emerald-300 border border-emerald-500/50 text-xs font-bold px-2.5 py-1 rounded-lg transition">Easy</button>
+                <button onclick="setAllLevels('medium')" class="bg-amber-500/30 hover:bg-amber-500/60 text-amber-300 border border-amber-500/50 text-xs font-bold px-2.5 py-1 rounded-lg transition">Medium</button>
+                <button onclick="setAllLevels('hard')" class="bg-red-600/30 hover:bg-red-600/60 text-red-300 border border-red-500/50 text-xs font-bold px-2.5 py-1 rounded-lg transition">Hard</button>
+            </div>
+
+            <button onclick="showLeaderboardModal()" class="bg-amber-500 hover:bg-amber-400 text-slate-950 font-game py-2 px-4 rounded-xl text-xs md:text-base flex items-center gap-2 shadow-lg transition active:scale-95 border border-amber-200">
+                <i class="fa-solid fa-trophy"></i> <span>Leaderboard</span>
+            </button>
+            <button onclick="resetAllGames()" class="bg-gradient-to-r from-red-600 via-emerald-600 to-amber-500 hover:brightness-110 text-white font-game py-2 px-4 rounded-xl text-xs md:text-base flex items-center gap-2 shadow-lg transition active:scale-95 border border-amber-300">
+                <i class="fa-solid fa-rotate-right"></i> <span>Reset Game</span>
+            </button>
+            <button onclick="toggleAudio()" id="mute-btn" class="bg-slate-800 hover:bg-slate-700 text-amber-300 border border-slate-700 font-bold p-2.5 rounded-xl transition shadow-md">
+                <i class="fa-solid fa-volume-high text-base"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- 4-Group Vertical Stacked Horizontal Rows -->
+    <main class="grid grid-cols-1 grid-rows-4 gap-2.5 flex-1 min-h-0 overflow-hidden">
+        
+        <!-- GROUP 1 (Red) -->
+        <div id="group-1" class="bg-slate-900/95 border-2 border-red-500/80 rounded-2xl px-3.5 py-2 flex flex-row items-center gap-3.5 relative overflow-hidden shadow-xl min-h-0 h-full">
+            <!-- Left Column: Group Title, Level Selector, Score & Bridge Progress -->
+            <div class="w-60 lg:w-72 shrink-0 h-full flex flex-col justify-between bg-slate-950/90 border border-red-500/50 rounded-xl px-3.5 py-2">
+                <div class="flex justify-between items-center gap-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-red-600 border border-red-400 flex items-center justify-center text-white shadow text-base font-black shrink-0">1</div>
+                        <div>
+                            <h2 class="font-game text-base lg:text-xl text-red-300 leading-none">Group 1</h2>
+                            <select id="level-select-1" onchange="changeGroupLevel(1, this.value)" aria-label="Group 1 Difficulty Level"
+                                    class="level-select mt-1 bg-slate-900 text-amber-300 border border-red-500/60 rounded-md text-[11px] lg:text-xs font-extrabold pl-2 pr-6 py-0.5 cursor-pointer focus:outline-none focus:border-amber-400">
+                                <option value="easy">⭐ Level 1: Easy</option>
+                                <option value="medium">⭐⭐ Level 2: Medium</option>
+                                <option value="hard">⭐⭐⭐ Level 3: Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span id="rank-badge-1" class="hidden text-xs font-game bg-red-600/40 text-red-300 border border-red-500 px-2 py-0.5 rounded-full"></span>
+                        <div class="bg-slate-900 border-2 border-amber-400 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-star text-amber-400 text-xs"></i>
+                            <span id="score-1" class="font-game text-sm lg:text-lg text-amber-300">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <div class="flex justify-between items-center text-xs font-black text-slate-200">
+                        <span class="flex items-center gap-1.5 text-red-400"><i class="fa-solid fa-bridge"></i> Bridge</span>
+                        <span id="bridge-status-1" class="text-amber-400 font-game text-xs">0% Built</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-5 rounded-full p-0.5 relative overflow-hidden border border-slate-700">
+                        <div id="bridge-bar-1" class="bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 h-full rounded-full w-0 bridge-progress-bar flex items-center justify-end pr-2 text-[11px] font-black text-slate-950"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle & Right Sections -->
+            <div id="content-1" class="flex-1 h-full flex flex-row items-center gap-3.5 overflow-hidden relative min-w-0"></div>
+            <div id="feedback-1" class="absolute inset-0 pointer-events-none flex items-center justify-center z-30"></div>
+        </div>
+
+        <!-- GROUP 2 (Emerald) -->
+        <div id="group-2" class="bg-slate-900/95 border-2 border-emerald-500/80 rounded-2xl px-3.5 py-2 flex flex-row items-center gap-3.5 relative overflow-hidden shadow-xl min-h-0 h-full">
+            <!-- Left Column -->
+            <div class="w-60 lg:w-72 shrink-0 h-full flex flex-col justify-between bg-slate-950/90 border border-emerald-500/50 rounded-xl px-3.5 py-2">
+                <div class="flex justify-between items-center gap-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-emerald-600 border border-emerald-400 flex items-center justify-center text-white shadow text-base font-black shrink-0">2</div>
+                        <div>
+                            <h2 class="font-game text-base lg:text-xl text-emerald-300 leading-none">Group 2</h2>
+                            <select id="level-select-2" onchange="changeGroupLevel(2, this.value)" aria-label="Group 2 Difficulty Level"
+                                    class="level-select mt-1 bg-slate-900 text-amber-300 border border-emerald-500/60 rounded-md text-[11px] lg:text-xs font-extrabold pl-2 pr-6 py-0.5 cursor-pointer focus:outline-none focus:border-amber-400">
+                                <option value="easy">⭐ Level 1: Easy</option>
+                                <option value="medium" selected>⭐⭐ Level 2: Medium</option>
+                                <option value="hard">⭐⭐⭐ Level 3: Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span id="rank-badge-2" class="hidden text-xs font-game bg-emerald-600/40 text-emerald-300 border border-emerald-500 px-2 py-0.5 rounded-full"></span>
+                        <div class="bg-slate-900 border-2 border-amber-400 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-star text-amber-400 text-xs"></i>
+                            <span id="score-2" class="font-game text-sm lg:text-lg text-amber-300">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <div class="flex justify-between items-center text-xs font-black text-slate-200">
+                        <span class="flex items-center gap-1.5 text-emerald-400"><i class="fa-solid fa-bridge"></i> Bridge</span>
+                        <span id="bridge-status-2" class="text-amber-400 font-game text-xs">0% Built</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-5 rounded-full p-0.5 relative overflow-hidden border border-slate-700">
+                        <div id="bridge-bar-2" class="bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 h-full rounded-full w-0 bridge-progress-bar flex items-center justify-end pr-2 text-[11px] font-black text-slate-950"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle & Right Sections -->
+            <div id="content-2" class="flex-1 h-full flex flex-row items-center gap-3.5 overflow-hidden relative min-w-0"></div>
+            <div id="feedback-2" class="absolute inset-0 pointer-events-none flex items-center justify-center z-30"></div>
+        </div>
+
+        <!-- GROUP 3 (Slate/White) -->
+        <div id="group-3" class="bg-slate-900/95 border-2 border-slate-300/80 rounded-2xl px-3.5 py-2 flex flex-row items-center gap-3.5 relative overflow-hidden shadow-xl min-h-0 h-full">
+            <!-- Left Column -->
+            <div class="w-60 lg:w-72 shrink-0 h-full flex flex-col justify-between bg-slate-950/90 border border-slate-400/50 rounded-xl px-3.5 py-2">
+                <div class="flex justify-between items-center gap-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-slate-200 border border-white flex items-center justify-center text-slate-950 shadow text-base font-black shrink-0">3</div>
+                        <div>
+                            <h2 class="font-game text-base lg:text-xl text-slate-100 leading-none">Group 3</h2>
+                            <select id="level-select-3" onchange="changeGroupLevel(3, this.value)" aria-label="Group 3 Difficulty Level"
+                                    class="level-select mt-1 bg-slate-900 text-amber-300 border border-slate-400/60 rounded-md text-[11px] lg:text-xs font-extrabold pl-2 pr-6 py-0.5 cursor-pointer focus:outline-none focus:border-amber-400">
+                                <option value="easy">⭐ Level 1: Easy</option>
+                                <option value="medium" selected>⭐⭐ Level 2: Medium</option>
+                                <option value="hard">⭐⭐⭐ Level 3: Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span id="rank-badge-3" class="hidden text-xs font-game bg-slate-100/20 text-slate-200 border border-slate-400 px-2 py-0.5 rounded-full"></span>
+                        <div class="bg-slate-900 border-2 border-amber-400 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-star text-amber-400 text-xs"></i>
+                            <span id="score-3" class="font-game text-sm lg:text-lg text-amber-300">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <div class="flex justify-between items-center text-xs font-black text-slate-200">
+                        <span class="flex items-center gap-1.5 text-slate-300"><i class="fa-solid fa-bridge"></i> Bridge</span>
+                        <span id="bridge-status-3" class="text-amber-400 font-game text-xs">0% Built</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-5 rounded-full p-0.5 relative overflow-hidden border border-slate-700">
+                        <div id="bridge-bar-3" class="bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 h-full rounded-full w-0 bridge-progress-bar flex items-center justify-end pr-2 text-[11px] font-black text-slate-950"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle & Right Sections -->
+            <div id="content-3" class="flex-1 h-full flex flex-row items-center gap-3.5 overflow-hidden relative min-w-0"></div>
+            <div id="feedback-3" class="absolute inset-0 pointer-events-none flex items-center justify-center z-30"></div>
+        </div>
+
+        <!-- GROUP 4 (Amber/Gold) -->
+        <div id="group-4" class="bg-slate-900/95 border-2 border-amber-400/80 rounded-2xl px-3.5 py-2 flex flex-row items-center gap-3.5 relative overflow-hidden shadow-xl min-h-0 h-full">
+            <!-- Left Column -->
+            <div class="w-60 lg:w-72 shrink-0 h-full flex flex-col justify-between bg-slate-950/90 border border-amber-400/50 rounded-xl px-3.5 py-2">
+                <div class="flex justify-between items-center gap-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-lg bg-amber-500 border border-amber-300 flex items-center justify-center text-slate-950 shadow text-base font-black shrink-0">4</div>
+                        <div>
+                            <h2 class="font-game text-base lg:text-xl text-amber-300 leading-none">Group 4</h2>
+                            <select id="level-select-4" onchange="changeGroupLevel(4, this.value)" aria-label="Group 4 Difficulty Level"
+                                    class="level-select mt-1 bg-slate-900 text-amber-300 border border-amber-400/60 rounded-md text-[11px] lg:text-xs font-extrabold pl-2 pr-6 py-0.5 cursor-pointer focus:outline-none focus:border-amber-400">
+                                <option value="easy">⭐ Level 1: Easy</option>
+                                <option value="medium">⭐⭐ Level 2: Medium</option>
+                                <option value="hard" selected>⭐⭐⭐ Level 3: Hard</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-1.5 shrink-0">
+                        <span id="rank-badge-4" class="hidden text-xs font-game bg-amber-500/30 text-amber-300 border border-amber-400 px-2 py-0.5 rounded-full"></span>
+                        <div class="bg-slate-900 border-2 border-amber-400 px-2.5 py-0.5 rounded-full flex items-center gap-1">
+                            <i class="fa-solid fa-star text-amber-400 text-xs"></i>
+                            <span id="score-4" class="font-game text-sm lg:text-lg text-amber-300">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex flex-col gap-1">
+                    <div class="flex justify-between items-center text-xs font-black text-slate-200">
+                        <span class="flex items-center gap-1.5 text-amber-400"><i class="fa-solid fa-bridge"></i> Bridge</span>
+                        <span id="bridge-status-4" class="text-amber-400 font-game text-xs">0% Built</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-5 rounded-full p-0.5 relative overflow-hidden border border-slate-700">
+                        <div id="bridge-bar-4" class="bg-gradient-to-r from-red-600 via-amber-500 to-emerald-500 h-full rounded-full w-0 bridge-progress-bar flex items-center justify-end pr-2 text-[11px] font-black text-slate-950"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Middle & Right Sections -->
+            <div id="content-4" class="flex-1 h-full flex flex-row items-center gap-3.5 overflow-hidden relative min-w-0"></div>
+            <div id="feedback-4" class="absolute inset-0 pointer-events-none flex items-center justify-center z-30"></div>
+        </div>
+
+    </main>
+</div>
+
+<!-- LEADERBOARD MODAL -->
+<div id="leaderboard-modal" class="fixed inset-0 bg-slate-950/85 backdrop-blur-md z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-900 border-2 border-amber-400 rounded-2xl max-w-lg w-full p-5 shadow-2xl relative overflow-hidden text-center">
+        <div class="absolute top-0 left-0 right-0 h-1.5 oman-flag-strip"></div>
+        <button onclick="closeLeaderboardModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white text-lg">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+        
+        <div class="text-4xl mb-1 animate-bounce">🌉 🇴🇲</div>
+        <h2 class="font-game text-2xl text-amber-300 tracking-wide">BRIDGE BUILDING CHAMPIONS</h2>
+        <p class="text-xs text-slate-300 mb-4">Official Group Rankings & Construction Results</p>
+
+        <div id="podium-list" class="space-y-2.5 mb-4"></div>
+
+        <div class="bg-slate-950/80 border border-slate-700 p-3 rounded-xl text-left text-xs text-slate-300 mb-4">
+            <span class="font-bold text-amber-400"><i class="fa-solid fa-clipboard-check mr-1"></i> Teacher Announcement Note:</span>
+            <p id="teacher-note" class="mt-1 text-slate-100 font-semibold">Bridges constructed based on correct answer speed & accuracy!</p>
+        </div>
+
+        <div class="flex justify-center gap-3">
+            <button onclick="closeLeaderboardModal()" class="bg-slate-800 hover:bg-slate-700 border border-slate-600 text-slate-200 font-bold px-5 py-2 rounded-xl text-xs">
+                Continue View
+            </button>
+            <button onclick="resetAllGames(); closeLeaderboardModal();" class="bg-gradient-to-r from-red-600 via-emerald-600 to-amber-500 text-white font-game px-5 py-2 rounded-xl text-xs shadow-lg hover:brightness-110">
+                Start New Challenge
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Web Audio API Sound Effects Setup
+    let audioCtx = null;
+    let soundEnabled = true;
+
+    function initAudio() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx && audioCtx.state === 'suspended') {
+            audioCtx.resume().catch(function(e){});
+        }
+    }
+
+    function toggleAudio() {
+        soundEnabled = !soundEnabled;
+        document.getElementById('mute-btn').innerHTML = soundEnabled 
+            ? '<i class="fa-solid fa-volume-high text-base"></i>' 
+            : '<i class="fa-solid fa-volume-xmark text-base text-red-400"></i>';
+    }
+
+    function playBuildSound() {
+        if (!soundEnabled) return;
+        initAudio();
+        if (!audioCtx) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(300, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(600, audioCtx.currentTime + 0.3);
+            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.3);
+        } catch(e) {}
+    }
+
+    function playClapSound() {
+        if (!soundEnabled) return;
+        initAudio();
+        if (!audioCtx) return;
+        try {
+            const duration = 0.8;
+            const bufferSize = audioCtx.sampleRate * duration;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) data[i] = Math.random() * 2 - 1;
+
+            const noise = audioCtx.createBufferSource();
+            noise.buffer = buffer;
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 1200;
+
+            const gain = audioCtx.createGain();
+            gain.gain.setValueAtTime(0.01, audioCtx.currentTime);
+            for(let t = 0; t < 0.7; t += 0.08) {
+                gain.gain.setValueAtTime(0.4, audioCtx.currentTime + t);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + t + 0.04);
+            }
+
+            noise.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            noise.start();
+            noise.stop(audioCtx.currentTime + duration);
+        } catch(e) {}
+    }
+
+    function playSadSound() {
+        if (!soundEnabled) return;
+        initAudio();
+        if (!audioCtx) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(200, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(90, audioCtx.currentTime + 0.45);
+            gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.45);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.45);
+        } catch(e) {}
+    }
+
+    /**
+     * Strict Lesson Question Bank:
+     * Source Text:
+     * "Living things need energy. All living things need energy. They need energy to move, to grow, to reproduce and to carry out other life processes.
+     * Plants and animals will not be healthy if they don't have enough energy.
+     * We get our energy from the food we eat. The energy moves from the food into our bodies. We use that energy to live and be healthy.
+     * Plants do not eat food to get their energy. Plants use light energy from the Sun to make or produce their food. We call plants producers.
+     * Plants are the only living things that can make their own food."
+     * 
+     * Each group (1 to 4) has distinct question phrasing for Easy, Medium, and Hard levels,
+     * covering the exact lesson facts in varied ways (Direct Recall, Fill-in-the-blank, Scenario/True-False, Reverse Definition).
+     */
+    const lessonQuestionBank = {
+        1: {
+            easy: [
+                {
+                    question: "What do ALL living things need to live and be healthy?",
+                    options: ["Energy", "Rocks", "Toys", "Sand"],
+                    answer: 0,
+                    hint: "All living things need energy!"
+                },
+                {
+                    question: "Where do we get our energy from?",
+                    options: ["From rocks", "From the food we eat", "From metal", "From shadows"],
+                    answer: 1,
+                    hint: "We get our energy from the food we eat!"
+                },
+                {
+                    question: "What do we call plants because they make their own food?",
+                    options: ["Producers", "Predators", "Prey", "Carnivores"],
+                    answer: 0,
+                    hint: "We call plants producers!"
+                }
+            ],
+            medium: [
+                {
+                    question: "Fill in the blank: Living things need energy to move, grow, and _______.",
+                    options: ["reproduce", "turn into stone", "stop living", "freeze"],
+                    answer: 0,
+                    hint: "They need energy to move, to grow, and to reproduce!"
+                },
+                {
+                    question: "How does energy get into our bodies?",
+                    options: ["From sleeping on rocks", "It moves from the food into our bodies", "From drinking sand", "We make food from sunlight"],
+                    answer: 1,
+                    hint: "The energy moves from the food we eat into our bodies!"
+                },
+                {
+                    question: "What kind of energy from the Sun do plants use to make food?",
+                    options: ["Sound energy", "Light energy", "Wind energy", "Rock energy"],
+                    answer: 1,
+                    hint: "Plants use light energy from the Sun to produce their food!"
+                }
+            ],
+            hard: [
+                {
+                    question: "Which living things are the ONLY ones that can make their own food?",
+                    options: ["Animals", "Humans", "Plants", "Birds"],
+                    answer: 2,
+                    hint: "Plants are the only living things that can make their own food!"
+                },
+                {
+                    question: "What happens to plants and animals if they do NOT have enough energy?",
+                    options: ["They will not be healthy", "They become producers", "They make sunlight", "They grow faster"],
+                    answer: 0,
+                    hint: "Plants and animals will not be healthy if they don't have enough energy!"
+                },
+                {
+                    question: "Why are plants called 'producers' in our lesson?",
+                    options: ["They eat other plants", "They use light energy to produce their food", "They hunt prey", "They move around to find food"],
+                    answer: 1,
+                    hint: "Plants use light energy from the Sun to make or produce their food!"
+                }
+            ]
+        },
+        2: {
+            easy: [
+                {
+                    question: "Do plants eat food like animals do to get energy?",
+                    options: ["No, plants do not eat food", "Yes, plants eat burgers", "Yes, plants eat rocks", "Yes, plants hunt prey"],
+                    answer: 0,
+                    hint: "Plants do not eat food to get their energy!"
+                },
+                {
+                    question: "Where does a plant get the light energy it needs to make food?",
+                    options: ["From the Sun", "From the Moon", "From the soil", "From water"],
+                    answer: 0,
+                    hint: "Plants use light energy from the Sun!"
+                },
+                {
+                    question: "Why do we use the energy we get from food?",
+                    options: ["To live and be healthy", "To become plants", "To make sunlight", "To turn into rocks"],
+                    answer: 0,
+                    hint: "We use that energy to live and be healthy!"
+                }
+            ],
+            medium: [
+                {
+                    question: "Fill in the blank: Plants and animals will not be _______ if they don't have enough energy.",
+                    options: ["healthy", "plants", "sunlight", "food"],
+                    answer: 0,
+                    hint: "Plants and animals will not be healthy without enough energy!"
+                },
+                {
+                    question: "Which statement is TRUE about living things?",
+                    options: ["Only animals need energy", "All living things need energy", "Only plants need energy", "Rocks need energy to grow"],
+                    answer: 1,
+                    hint: "All living things need energy!"
+                },
+                {
+                    question: "What do plants use light energy from the Sun to do?",
+                    options: ["Make or produce their food", "Walk around", "Eat animals", "Sleep at night"],
+                    answer: 0,
+                    hint: "Plants use light energy from the Sun to make or produce their food!"
+                }
+            ],
+            hard: [
+                {
+                    question: "Which of these is NOT listed as a life process needing energy in our lesson?",
+                    options: ["To move", "To grow", "To reproduce", "To turn into metal"],
+                    answer: 3,
+                    hint: "Living things need energy to move, grow, reproduce, and carry out life processes!"
+                },
+                {
+                    question: "Compare plants and humans: How do their ways of getting energy differ?",
+                    options: ["Humans eat food; plants make food using Sun's light", "Plants eat food; humans use sunlight", "Both make food from the Sun", "Neither needs energy"],
+                    answer: 0,
+                    hint: "We get energy from food we eat, while plants use light energy from the Sun!"
+                },
+                {
+                    question: "If a living thing can make its own food using sunlight, what MUST it be?",
+                    options: ["A plant (producer)", "An animal", "A human", "A carnivore"],
+                    answer: 0,
+                    hint: "Plants are the only living things that can make their own food!"
+                }
+            ]
+        },
+        3: {
+            easy: [
+                {
+                    question: "What moves from the food we eat into our bodies?",
+                    options: ["Energy", "Sunlight", "Soil", "Leaves"],
+                    answer: 0,
+                    hint: "The energy moves from the food into our bodies!"
+                },
+                {
+                    question: "Can animals make their own food using light from the Sun?",
+                    options: ["No, only plants can", "Yes, all animals can", "Yes, lions can", "Yes, humans can"],
+                    answer: 0,
+                    hint: "Plants are the only living things that can make their own food!"
+                },
+                {
+                    question: "What is a living thing called when it makes its own food?",
+                    options: ["A producer", "A consumer", "Prey", "A predator"],
+                    answer: 0,
+                    hint: "We call plants producers because they produce their own food!"
+                }
+            ],
+            medium: [
+                {
+                    question: "Fill in the blank: Plants use _______ energy from the Sun to produce their food.",
+                    options: ["light", "sound", "wind", "rock"],
+                    answer: 0,
+                    hint: "Plants use light energy from the Sun!"
+                },
+                {
+                    question: "Why do living things need energy besides moving and growing?",
+                    options: ["To reproduce and carry out life processes", "To stop breathing", "To become rocks", "To hide from the Sun"],
+                    answer: 0,
+                    hint: "They need energy to move, grow, reproduce and carry out other life processes!"
+                },
+                {
+                    question: "What happens when we eat food?",
+                    options: ["Energy moves from the food into our bodies", "We turn into producers", "Light energy leaves our body", "We stop needing energy"],
+                    answer: 0,
+                    hint: "The energy moves from the food into our bodies!"
+                }
+            ],
+            hard: [
+                {
+                    question: "A student says: 'Dogs are producers because they make energy.' Why is this wrong?",
+                    options: ["Only plants are producers that make their own food", "Dogs use sunlight to make food", "Producers don't need energy", "Dogs are plants"],
+                    answer: 0,
+                    hint: "Plants are the only living things that can make their own food!"
+                },
+                {
+                    question: "What is the exact reason plants do NOT need to eat food?",
+                    options: ["They produce their own food using light energy from the Sun", "They don't need energy at all", "They get energy from rocks", "They never grow or reproduce"],
+                    answer: 0,
+                    hint: "Plants do not eat food because they use light energy from the Sun to make their food!"
+                },
+                {
+                    question: "Which sentence best explains why we eat food?",
+                    options: ["To get energy that moves into our bodies so we live and stay healthy", "To become producers like plants", "To make light energy for the Sun", "To stop carrying out life processes"],
+                    answer: 0,
+                    hint: "We get energy from food, and we use that energy to live and be healthy!"
+                }
+            ]
+        },
+        4: {
+            easy: [
+                {
+                    question: "Which living things are called 'producers'?",
+                    options: ["Plants", "Lions", "Humans", "Fish"],
+                    answer: 0,
+                    hint: "We call plants producers!"
+                },
+                {
+                    question: "Do all living things need energy?",
+                    options: ["Yes, all living things need energy", "No, only big animals", "No, plants don't need energy", "Only during the night"],
+                    answer: 0,
+                    hint: "All living things need energy!"
+                },
+                {
+                    question: "What do plants use to make or produce their food?",
+                    options: ["Light energy from the Sun", "Food they eat", "Meat and insects", "Sand and rocks"],
+                    answer: 0,
+                    hint: "Plants use light energy from the Sun to produce their food!"
+                }
+            ],
+            medium: [
+                {
+                    question: "Fill in the blank: Plants are the _______ living things that can make their own food.",
+                    options: ["only", "smallest", "fastest", "last"],
+                    answer: 0,
+                    hint: "Plants are the ONLY living things that can make their own food!"
+                },
+                {
+                    question: "What is the result if a plant or animal does not get enough energy?",
+                    options: ["It will not be healthy", "It becomes a producer", "It makes more sunlight", "It moves faster"],
+                    answer: 0,
+                    hint: "Plants and animals will not be healthy if they don't have enough energy!"
+                },
+                {
+                    question: "Fill in the blank: We get our energy from the _______ we eat.",
+                    options: ["food", "sunlight", "air", "soil"],
+                    answer: 0,
+                    hint: "We get our energy from the food we eat!"
+                }
+            ],
+            hard: [
+                {
+                    question: "Which list shows four things living things need energy for?",
+                    options: ["Move, grow, reproduce, and carry out life processes", "Sleep, freeze, melt, and break", "Make sunlight, rocks, soil, and water", "Stop growing, stop moving, and shrink"],
+                    answer: 0,
+                    hint: "They need energy to move, to grow, to reproduce and to carry out other life processes!"
+                },
+                {
+                    question: "Trace the energy path into a human body according to the lesson:",
+                    options: ["Food we eat -> Energy moves into our bodies -> Live and be healthy", "Sunlight -> Moves into our bodies -> Makes our food", "Rocks -> Energy moves into food -> Plants eat it", "Producers -> Eat food -> Give us sunlight"],
+                    answer: 0,
+                    hint: "We get energy from food; energy moves from food into our bodies to live and be healthy!"
+                },
+                {
+                    question: "Why does a plant NOT have a mouth to eat food?",
+                    options: ["Because it produces its own food using light energy from the Sun", "Because plants are not living things", "Because plants do not need energy", "Because plants never grow"],
+                    answer: 0,
+                    hint: "Plants do not eat food; they use light energy from the Sun to make their food!"
+                }
+            ]
+        }
+    };
+
+    // State Tracker for All 4 Groups (including selected difficulty level per group)
+    const gameState = {
+        1: { level: 'easy', index: 0, score: 0, bridgeProgress: 0, correctCount: 0, wrongCount: 0, finishTime: null },
+        2: { level: 'medium', index: 0, score: 0, bridgeProgress: 0, correctCount: 0, wrongCount: 0, finishTime: null },
+        3: { level: 'medium', index: 0, score: 0, bridgeProgress: 0, correctCount: 0, wrongCount: 0, finishTime: null },
+        4: { level: 'hard', index: 0, score: 0, bridgeProgress: 0, correctCount: 0, wrongCount: 0, finishTime: null }
+    };
+
+    let finishOrder = [];
+
+    // Allow teacher to switch difficulty level for an individual group/student on the fly
+    function changeGroupLevel(groupId, newLevel) {
+        gameState[groupId].level = newLevel;
+        restartGroup(groupId);
+    }
+
+    // Allow teacher to switch all 4 groups to a specific level at once
+    function setAllLevels(newLevel) {
+        finishOrder = [];
+        for (let i = 1; i <= 4; i++) {
+            gameState[i].level = newLevel;
+            const selectEl = document.getElementById(`level-select-${i}`);
+            if (selectEl) selectEl.value = newLevel;
+            restartGroup(i);
+        }
+    }
+
+    function getLevelLabel(level) {
+        if (level === 'easy') return 'Level 1: Easy';
+        if (level === 'medium') return 'Level 2: Medium';
+        return 'Level 3: Hard';
+    }
+
+    function renderQuestion(groupId) {
+        const group = gameState[groupId];
+        const questions = lessonQuestionBank[groupId][group.level];
+        const container = document.getElementById(`content-${groupId}`);
+
+        if (!container) return;
+
+        // Update Bridge Progress Bar & Status Text
+        const bridgeBar = document.getElementById(`bridge-bar-${groupId}`);
+        const bridgeStatus = document.getElementById(`bridge-status-${groupId}`);
+        const percent = Math.round((group.bridgeProgress / 3) * 100);
+        
+        if (bridgeBar) {
+            bridgeBar.style.width = `${percent}%`;
+            bridgeBar.innerText = percent > 0 ? `${percent}%` : '';
+        }
+        if (bridgeStatus) {
+            bridgeStatus.innerText = percent === 100 ? '100% BUILT! 🌉' : `${percent}% Built`;
+        }
+
+        if (group.index >= questions.length) {
+            let rankText = "";
+            const pos = finishOrder.indexOf(groupId) + 1;
+            if (pos === 1) rankText = "1st Place 🥇";
+            else if (pos === 2) rankText = "2nd Place 🥈";
+            else if (pos === 3) rankText = "3rd Place 🥉";
+            else if (pos > 0) rankText = `${pos}th Place 🏁`;
+            else rankText = "Finished 🏁";
+
+            container.innerHTML = `
+                <div class="w-full h-full flex items-center justify-between bg-slate-950/90 border-2 border-amber-400/60 rounded-xl px-6 py-2">
+                    <div class="flex items-center gap-4">
+                        <span class="text-4xl lg:text-5xl animate-bounce">🌉</span>
+                        <div>
+                            <h3 class="font-game text-xl lg:text-3xl text-amber-300">BRIDGE COMPLETE! 🌉 🇴🇲</h3>
+                            <p class="text-sm lg:text-lg text-slate-100 font-black">
+                                <span class="text-xs uppercase bg-slate-800 border border-slate-600 px-2 py-0.5 rounded mr-2 text-amber-300">${getLevelLabel(group.level)}</span>
+                                Score: <span class="text-amber-400 text-lg lg:text-2xl">${group.score} Stars</span> (${group.correctCount}/3 Correct)
+                            </p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        <div class="bg-amber-400/20 border-2 border-amber-400 px-4 py-1.5 rounded-full">
+                            <span class="font-game text-base lg:text-2xl text-amber-300">${rankText}</span>
+                        </div>
+                        <button onclick="restartGroup(${groupId})" class="bg-slate-800 hover:bg-slate-700 text-sm lg:text-base px-4 py-2 rounded-xl border border-slate-500 text-slate-100 font-extrabold shadow-md">Replay</button>
+                    </div>
+                </div>
+            `;
+            return;
+        }
+
+        const qData = questions[group.index];
+        let optionsHTML = '';
+        qData.options.forEach((opt, idx) => {
+            optionsHTML += `
+                <button onclick="checkAnswer(${groupId}, ${idx})" 
+                        class="option-btn w-full h-full min-h-0 text-left bg-slate-950/95 hover:bg-slate-800 border-2 border-slate-600 hover:border-amber-400 px-2.5 py-1 rounded-xl text-xs sm:text-sm lg:text-[15px] xl:text-base font-black text-white flex items-center gap-2 shadow-md border-l-4 border-l-amber-400 whitespace-normal break-words">
+                    <span class="w-6 h-6 lg:w-7 lg:h-7 rounded-lg border-2 border-amber-400 flex items-center justify-center shrink-0 text-xs lg:text-sm text-amber-300 font-game bg-slate-900 font-black">${String.fromCharCode(65 + idx)}</span>
+                    <span class="leading-snug font-extrabold text-slate-100 flex-1 whitespace-normal break-words">${opt}</span>
+                </button>
+            `;
+        });
+
+        const levelBadgeColors = {
+            easy: 'text-emerald-400',
+            medium: 'text-amber-400',
+            hard: 'text-red-400'
+        };
+
+        container.innerHTML = `
+            <!-- Middle Section: Big Clear Question -->
+            <div class="flex-1 h-full bg-slate-950 px-3.5 py-1.5 rounded-xl border-2 border-slate-700 flex flex-col justify-center min-w-0">
+                <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-[11px] lg:text-xs font-black tracking-wider text-amber-400 uppercase">Question ${group.index + 1}/3</span>
+                    <span class="text-[11px] lg:text-xs font-extrabold uppercase ${levelBadgeColors[group.level]}">${getLevelLabel(group.level)}</span>
+                </div>
+                <h3 class="text-sm sm:text-base lg:text-lg xl:text-xl font-black text-white leading-snug whitespace-normal break-words">${qData.question}</h3>
+            </div>
+            <!-- Right Section: 2x2 Grid of Full-Display Answer Buttons -->
+            <div class="w-[52%] lg:w-[54%] shrink-0 h-full grid grid-cols-2 grid-rows-2 gap-1.5 min-h-0">
+                ${optionsHTML}
+            </div>
+        `;
+    }
+
+    function checkAnswer(groupId, selectedIdx) {
+        const group = gameState[groupId];
+        const currentQ = lessonQuestionBank[groupId][group.level][group.index];
+        const groupCard = document.getElementById(`group-${groupId}`);
+        const feedbackContainer = document.getElementById(`feedback-${groupId}`);
+
+        if (selectedIdx === currentQ.answer) {
+            group.score += 10;
+            group.bridgeProgress += 1;
+            group.correctCount += 1;
+            document.getElementById(`score-${groupId}`).innerText = group.score;
+
+            playBuildSound();
+            playClapSound();
+            try { confetti({ particleCount: 35, spread: 60, colors: ['#dc2626', '#ffffff', '#16a34a', '#fbbf24'] }); } catch(e){}
+
+            feedbackContainer.innerHTML = `
+                <div class="flex items-center gap-3 animate-star z-30 bg-emerald-950/95 px-6 py-2.5 rounded-xl border-2 border-amber-400 shadow-xl backdrop-blur-md">
+                    <span class="font-game text-lg lg:text-xl text-emerald-300">BEAM ADDED! 🌉</span>
+                    <span class="text-base lg:text-lg text-amber-300 font-extrabold">+10 STARS</span>
+                </div>
+            `;
+
+            setTimeout(() => {
+                feedbackContainer.innerHTML = '';
+                group.index += 1;
+
+                if (group.index >= 3 && !group.finishTime) {
+                    group.finishTime = Date.now();
+                    if (!finishOrder.includes(groupId)) finishOrder.push(groupId);
+                    updateRankBadge(groupId);
+                }
+
+                renderQuestion(groupId);
+                checkAllFinished();
+            }, 1000);
+
+        } else {
+            group.wrongCount += 1;
+            playSadSound();
+            groupCard.classList.add('shake-element');
+            setTimeout(() => groupCard.classList.remove('shake-element'), 400);
+
+            feedbackContainer.innerHTML = `
+                <div class="flex items-center gap-3 animate-bounce z-30 bg-red-950/95 px-6 py-2.5 rounded-xl border-2 border-red-500 text-center backdrop-blur-md shadow-xl">
+                    <span class="text-3xl">😢</span>
+                    <div class="text-left">
+                        <span class="font-game text-base lg:text-lg text-red-300 block leading-none">CONSTRUCTION DELAY!</span>
+                        <p class="text-xs lg:text-base text-slate-100 font-bold mt-0.5">${currentQ.hint || 'Think carefully!'}</p>
+                    </div>
+                </div>
+            `;
+
+            setTimeout(() => {
+                feedbackContainer.innerHTML = '';
+                group.index += 1;
+
+                if (group.index >= 3 && !group.finishTime) {
+                    group.finishTime = Date.now();
+                    if (!finishOrder.includes(groupId)) finishOrder.push(groupId);
+                    updateRankBadge(groupId);
+                }
+
+                renderQuestion(groupId);
+                checkAllFinished();
+            }, 1150);
+        }
+    }
+
+    function updateRankBadge(groupId) {
+        const badge = document.getElementById(`rank-badge-${groupId}`);
+        if (!badge) return;
+        const pos = finishOrder.indexOf(groupId) + 1;
+        badge.classList.remove('hidden');
+        badge.innerText = `#${pos}`;
+    }
+
+    function checkAllFinished() {
+        const allDone = [1, 2, 3, 4].every(id => gameState[id].index >= 3);
+        if (allDone) {
+            setTimeout(() => {
+                showLeaderboardModal();
+            }, 600);
+        }
+    }
+
+    function showLeaderboardModal() {
+        const modal = document.getElementById('leaderboard-modal');
+        const podiumList = document.getElementById('podium-list');
+        
+        const sortedGroups = [1, 2, 3, 4].sort((a, b) => {
+            if (gameState[b].score !== gameState[a].score) {
+                return gameState[b].score - gameState[a].score;
+            }
+            const orderA = finishOrder.indexOf(a) !== -1 ? finishOrder.indexOf(a) : 99;
+            const orderB = finishOrder.indexOf(b) !== -1 ? finishOrder.indexOf(b) : 99;
+            return orderA - orderB;
+        });
+
+        const medals = ['🥇 1st Place', '🥈 2nd Place', '🥉 3rd Place', '🏁 4th Place'];
+        const groupColors = {
+            1: 'border-red-500 text-red-300 bg-red-950/40',
+            2: 'border-emerald-500 text-emerald-300 bg-emerald-950/40',
+            3: 'border-slate-300 text-slate-100 bg-slate-900/40',
+            4: 'border-amber-400 text-amber-300 bg-amber-950/40'
+        };
+
+        let html = '';
+        sortedGroups.forEach((gId, index) => {
+            const st = gameState[gId];
+            const medal = medals[index];
+            const colorClass = groupColors[gId];
+
+            html += `
+                <div class="flex items-center justify-between border-2 ${colorClass} p-3 rounded-xl text-left shadow-md">
+                    <div class="flex items-center gap-3">
+                        <span class="font-game text-sm text-amber-400">${medal}</span>
+                        <div>
+                            <h4 class="font-game text-base">Group ${gId} <span class="text-xs font-sans font-bold opacity-85">(${getLevelLabel(st.level)})</span></h4>
+                            <p class="text-xs font-bold opacity-90">${st.correctCount}/3 Correct • ${st.wrongCount} Structural Delays</p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="font-game text-base text-amber-300">${st.score} Stars</span>
+                    </div>
+                </div>
+            `;
+        });
+
+        podiumList.innerHTML = html;
+
+        const winnerGroup = sortedGroups[0];
+        document.getElementById('teacher-note').innerText = 
+            `🎉 WINNER ANNOUNCEMENT: Group ${winnerGroup} (${getLevelLabel(gameState[winnerGroup].level)}) constructed their bridge first with ${gameState[winnerGroup].score} Stars (${gameState[winnerGroup].correctCount}/3 correct answers)!`;
+
+        modal.classList.remove('hidden');
+        try { confetti({ particleCount: 80, spread: 80, origin: { y: 0.6 } }); } catch(e){}
+    }
+
+    function closeLeaderboardModal() {
+        document.getElementById('leaderboard-modal').classList.add('hidden');
+    }
+
+    function restartGroup(groupId) {
+        gameState[groupId].index = 0;
+        gameState[groupId].score = 0;
+        gameState[groupId].bridgeProgress = 0;
+        gameState[groupId].correctCount = 0;
+        gameState[groupId].wrongCount = 0;
+        gameState[groupId].finishTime = null;
+        
+        finishOrder = finishOrder.filter(id => id !== groupId);
+        document.getElementById(`score-${groupId}`).innerText = '0';
+        document.getElementById(`rank-badge-${groupId}`).classList.add('hidden');
+        renderQuestion(groupId);
+    }
+
+    function resetAllGames() {
+        finishOrder = [];
+        for (let i = 1; i <= 4; i++) restartGroup(i);
+    }
+
+    window.onload = function() {
+        for (let i = 1; i <= 4; i++) {
+            const selectEl = document.getElementById(`level-select-${i}`);
+            if (selectEl) selectEl.value = gameState[i].level;
+            renderQuestion(i);
+        }
+    };
+</script>
+</body>
+</html>
